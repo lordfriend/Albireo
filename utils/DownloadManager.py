@@ -33,6 +33,9 @@ class DownloadManager:
         """
         return self.downloader.connect_to_daemon()
 
+    def set_disconnect_cb(self, cb):
+        self.downloader.set_on_disconnect_cb(cb)
+
     def on_download_completed(self, torrent_id):
         logger.info('Download complete: %s', torrent_id)
 

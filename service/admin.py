@@ -7,6 +7,8 @@ from domain.Image import Image
 from domain.TorrentFile import TorrentFile
 from domain.VideoFile import VideoFile
 from datetime import datetime
+
+from domain.WatchProgress import WatchProgress
 from utils.SessionManager import SessionManager
 from utils.exceptions import ClientError, ServerError
 from utils.http import json_resp, FileDownloader, bangumi_request, rpc_request
@@ -457,15 +459,50 @@ class AdminService:
             SessionManager.Session.remove()
 
     def delete_episode(self, episode_id):
+        session = SessionManager.Session()
         try:
-            session = SessionManager.Session()
-            episode = session.query(Episode).\
-                options(joinedload(Episode.bangumi)).\
+            (episode, bangumi) = session.query(Episode, Bangumi).\
+                join(Bangumi).\
                 filter(Episode.id == episode_id).one()
-            episode.delete_mark = datetime.now()
-            episode.bangumi.eps = episode.bangumi.eps - 1
+
+            # remove files of episode
+            bangumi_folder_path = '{0}/{1}'.format(self.base_path, str(episode.bangumi_id))
+
+            video_file_list = session.query(VideoFile). \
+                filter(VideoFile.episode_id == episode_id). \
+                all()
+
+            watch_progress_list = session.query(WatchProgress).filter(
+                WatchProgress.episode_id == episode_id).all()
+
+            for video_file in video_file_list:
+                # remove torrent
+                try:
+                    file_path = '{0}/{1}'.format(bangumi_folder_path, video_file.file_path)
+                    os.remove(file_path)
+                except Exception as error:
+                    logger.error(error)
+                # remove torrent from deluge
+                rpc_request.send('delete_deluge_torrent', {'torrent_id': video_file.torrent_id})
+                # remove video_file
+                session.delete(video_file)
+
+            # remove watch-progress
+            for watch_progress in watch_progress_list:
+                session.delete(watch_progress)
+
+            # remove image
+            if episode.thumbnail_image_id is not None:
+                image = session.query(Image).filter(Image.id == episode.thumbnail_image_id).one()
+                session.delete(image)
+
+            # remove episode
+            session.delete(episode)
+
+            bangumi.eps = bangumi.eps - 1
+
             session.commit()
-            return json_resp({'data': {'delete_delay': self.delete_delay['episode']}})
+            return json_resp({'message': 'ok'})
         finally:
             SessionManager.Session.remove()
 

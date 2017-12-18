@@ -19,17 +19,17 @@ class DelugeDownloader(Downloader):
         self.__on_download_completed_callback = on_download_completed_callback
 
     def __on_connect_success(self, result):
-        '''
+        """
         : add event handlers
-        '''
+        """
         LOG.info('Connection was successful')
         client.register_event_handler('TorrentFinishedEvent', self.__on_download_completed)
         return result
 
     def __on_connect_fail(self, result):
-        '''
+        """
         :throw a exception
-        '''
+        """
         raise Exception()
 
     def connect_to_daemon(self):
@@ -39,6 +39,9 @@ class DelugeDownloader(Downloader):
         deferred.addErrback(self.__on_connect_fail)
 
         return deferred
+
+    def set_on_disconnect_cb(self, cb):
+        client.set_disconnect_callback(cb)
 
     def __on_download_completed(self, torrent_id):
         self.__on_download_completed_callback(torrent_id)
@@ -76,10 +79,10 @@ class DelugeDownloader(Downloader):
 
     @inlineCallbacks
     def get_complete_torrents(self):
-        '''
+        """
         get complete torrents
         :return: a dict which contains all complete torrents (progress = 100), key is torrent_id, value is dict {files: tuple}
-        '''
+        """
         torrent_dict = yield client.core.get_torrents_status({'progress': (100,)}, ['files'])
         returnValue(torrent_dict)
 

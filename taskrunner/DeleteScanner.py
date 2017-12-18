@@ -27,7 +27,6 @@ class DeleteScanner:
         self.interval = 60
         self.base_path = base_path
         self.bangumi_delete_delay = delete_delay['bangumi']
-        self.episode_delete_delay = delete_delay['episode']
 
     def start(self):
         lc = LoopingCall(self.scan_delete)
@@ -103,73 +102,9 @@ class DeleteScanner:
         finally:
             SessionManager.Session.remove()
 
-    def delete_episode(self, episode):
-        session = SessionManager.Session()
-        try:
-            task_content = {'episode_id': str(episode.id)}
-            video_file_list = session.query(VideoFile).\
-                filter(VideoFile.episode_id == episode.id).\
-                all()
-
-            watch_progress_list = session.query(WatchProgress).filter(
-                WatchProgress.episode_id == episode.id).all()
-
-            task_content['video_file_list'] = [row2dict(video_file) for video_file in video_file_list]
-
-            task_content['task_step'] = ['db', 'torrent',  'file_system']
-
-            task = Task(type=Task.TYPE_EPISODE_DELETE, content=json.dumps(task_content, cls=DateTimeEncoder), status=Task.STATUS_IN_PROGRESS)
-            session.add(task)
-            session.commit()
-
-            for video_file in video_file_list:
-                session.delete(video_file)
-
-            # remove watch-progress
-            for watch_progress in watch_progress_list:
-                session.delete(watch_progress)
-
-            # remove image
-            if episode.thumbnail_image_id is not None:
-                image = session.query(Image).filter(Image.id == episode.thumbnail_image_id).one()
-                session.delete(image)
-
-            # remove episode
-            session.delete(episode)
-
-            self.__unshift_task_step(task_content, task, session)
-
-            # remove torrent
-            if len(task_content['video_file_list']) > 0:
-                threads.blockingCallFromThread(reactor, download_manager.remove_torrents, task_content['video_file_list']['torrent_id'], True)
-
-            self.__unshift_task_step(task_content, task, session)
-
-            # remove files of episode
-            bangumi_folder_path = '{0}/{1}'.format(self.base_path, str(episode.bangumi_id))
-            for torrent_file in task_content['video_file_list']:
-                file_path = '{0}/{1}'.format(bangumi_folder_path, torrent_file['file_path'])
-                os.remove(file_path)
-
-            task_content['task_step'].pop(0)
-            task.content = json.dumps(task_content)
-            task.status = Task.STATUS_COMPLETE
-
-            session.commit()
-            return str(task.id)
-
-        finally:
-            SessionManager.Session.remove()
-
     def __dispatch_delete_bangumi(self, bangumi_list):
         for bangumi in bangumi_list:
             d = threads.deferToThread(self.delete_bangumi, bangumi)
-            d.addCallback(self.__on_delete_callback)
-            d.addErrback(self.__on_delete_errCallback)
-
-    def __dispatch_delete_episode(self, episode_list):
-        for episode in episode_list:
-            d = threads.deferToThread(self.delete_episode, episode)
             d.addCallback(self.__on_delete_callback)
             d.addErrback(self.__on_delete_errCallback)
 
@@ -210,47 +145,8 @@ class DeleteScanner:
         finally:
             SessionManager.Session.remove()
 
-    def scan_episode(self):
-        session = SessionManager.Session()
-        try:
-            task_list = session.query(Task). \
-                filter(Task.status != Task.STATUS_COMPLETE). \
-                filter((Task.type == Task.TYPE_EPISODE_DELETE) | (Task.type == Task.TYPE_BANGUMI_DELETE)).\
-                all()
-            episode_id_in_task = []
-            bangumi_id_in_task = []
-            for task in task_list:
-                content_dict = json.loads(task.content)
-                if task.type == Task.TYPE_EPISODE_DELETE:
-                    episode_id_in_task.append(content_dict['episode_id'])
-                else:
-                    bangumi_id_in_task.append(content_dict['bangumi_id'])
-
-            latest_delete_time = datetime.now() - timedelta(minutes=self.episode_delete_delay)
-
-            query = session.query(Episode)
-
-            if len(episode_id_in_task) > 0:
-                query = query.filter(Episode.id.notin_(episode_id_in_task))
-
-            if len(bangumi_id_in_task) > 0:
-                query = query.filter(Episode.bangumi_id.notin_(bangumi_id_in_task))
-
-            episode_list = query.\
-                filter(Episode.delete_mark != None).\
-                filter(Episode.delete_mark <= latest_delete_time).\
-                all()
-
-            return episode_list
-        finally:
-            SessionManager.Session.remove()
-
     def scan_delete(self):
         logger.info('scan delete')
         bgm_d = threads.deferToThread(self.scan_bangumi)
         bgm_d.addCallback(self.__dispatch_delete_bangumi)
         bgm_d.addErrback(self.__query_error)
-
-        eps_d = threads.deferToThread(self.scan_episode)
-        eps_d.addCallback(self.__dispatch_delete_episode)
-        eps_d.addErrback(self.__query_error)

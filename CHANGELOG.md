@@ -1,5 +1,14 @@
 #Changelog
 
+## 2.7.1
+
+- InfoScanner will check bangumi status and fix it before perform a scan.
+- Auto change bangumi status to FINISHED when imported.
+- Fix #39
+- Change the procedure for deleting an episode. Now delete is immediately effecting. 
+    DeleteScanner will no longer scan episode which is in pending delete status.
+    If you have episode which is in pending delete status. please restore this episode and delete it again.
+
 ## 2.7.0
 
 ### Feature Add:

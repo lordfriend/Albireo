@@ -68,9 +68,9 @@ class BangumiScanner(object):
     def check_bangumi_status(self, bangumi):
         return bangumi.status == Bangumi.STATUS_FINISHED
 
-    def update_bangumi_on_air(self, bangumi):
-        if bangumi.air_date <= datetime.today().date():
-            bangumi.status = Bangumi.STATUS_ON_AIR
+    # def update_bangumi_on_air(self, bangumi):
+    #     if bangumi.air_date <= datetime.today().date():
+    #         bangumi.status = Bangumi.STATUS_ON_AIR
 
     def update_bangumi_status(self, bangumi):
         session = SessionManager.Session
@@ -91,10 +91,10 @@ class BangumiScanner(object):
             SessionManager.Session.remove()
 
     def query_bangumi_list(self):
-        '''
+        """
         Subclass should override this method
         :return: a bangumi list
-        '''
+        """
         return []
 
     def query_episode_list(self, bangumi_id):
@@ -111,20 +111,20 @@ class BangumiScanner(object):
             SessionManager.Session.remove()
 
     def scan_feed(self,bangumi, episode_list):
-        '''
+        """
         subclass should override this method
         :param bangumi,
         :param episode_list
         :return: list of tuples (download_url, episode_no)
-        '''
+        """
         returnValue([])
 
     @inlineCallbacks
     def scan_bangumi(self):
-        '''
+        """
         dispatch the feed crawling job, this is a synchronized method running on individual thread
         :return:
-        '''
+        """
         logger.info('scan bangumi %s', self.__class__.__name__)
         bangumi_list = yield threads.deferToThread(self.query_bangumi_list)
         index_list = range(len(bangumi_list))
@@ -137,7 +137,10 @@ class BangumiScanner(object):
                 scan_result = yield threads.deferToThread(self.scan_feed, bangumi, episode_list)
                 if scan_result is None:
                     continue
-                url_eps_list = [(download_url, self.__find_episode_by_number(episode_list, eps_no), file_path, file_name) for (download_url, eps_no, file_path, file_name) in scan_result]
+                url_eps_list = [
+                    (download_url, self.__find_episode_by_number(episode_list, eps_no), file_path, file_name)
+                    for (download_url, eps_no, file_path, file_name) in scan_result
+                ]
                 # this method may raise exception
                 yield threads.deferToThread(self.download_episodes, url_eps_list, bangumi.id)
                 yield threads.deferToThread(self.update_bangumi_status, bangumi)

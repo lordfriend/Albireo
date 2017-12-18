@@ -633,17 +633,17 @@ Update an episode, only a few property will be updated, for more detail, read th
 
 ### Delete an episode [DELETE /api/admin/episode/{episode_id}]
 
-Delete an episode, this operation will only add an delete_mark property to episode as current time.
-after a delay, task will run and delete this episode. user can undo the delete operation by remove the delete_mark before it is actually deleted.
+Delete an episode. *In the previous version, this operation will only add an delete_mark property to episode as current time.*
+*after a delay, task will run and delete this episode. user can undo the delete operation by remove the delete_mark before it is actually deleted.*
+
+**In current version. This operation make effective immediately.**
 
 + Parameters
     + `episode_id` (string, required)
 
 + Response 200 (application/json)
 
-    + Attributes
-        + data
-            + `delete_delay` (number) - delete_delay for episode, read from config file, unit is minute
+        {"message": "ok"}
 
 ## Video File [/api/video-file{?episode_id}]
 

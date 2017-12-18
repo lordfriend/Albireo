@@ -121,6 +121,10 @@ sentry_wrapper.scheduler_sentry()
 
 def on_connected(result):
     logger.info(result)
+
+    # set disconnect callback
+    download_manager.set_disconnect_cb(on_disconnect)
+
     scheduler.start()
     info_scanner.start()
     download_status_scanner.start()
@@ -135,10 +139,22 @@ def on_connect_fail(result):
     reactor.stop()
 
 
+def on_disconnect():
+    sentry_wrapper.client.captureMessage('deluge disconnect unexpectedly')
+    reactor.stop()
+
+
+def stop_tasks():
+    logger.info('shutting down...')
+    logger.info('stopping InfoScanner...')
+    info_scanner.stop()
+
+
 d = download_manager.connect()
 d.addCallback(on_connected)
 d.addErrback(on_connect_fail)
 
 setup_server()
 
+reactor.addSystemEventTrigger('before', 'shutdown', stop_tasks)
 reactor.run()
