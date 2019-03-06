@@ -267,10 +267,10 @@ class WatchService:
             filter(Favorites.user_id == user_id).\
             first()
         if not favorite:
-            raise ClientError(ClientError.NOT_FOUND, 404, {bangumi_id: bangumi_id})
+            return json_resp({'data': 0, 'status': 0})
         else:
             favorite.check_time = datetime.utcnow()
-            return json_resp({'data': favorite.check_time, 'status': 0})
+            return json_resp({'data': favorite.check_time, 'status': favorite.status})
 
 
 watch_service = WatchService()
