@@ -142,11 +142,10 @@ video_manager.set_base_path(scheduler.base_path)
 sentry_wrapper.scheduler_sentry()
 
 
-def on_connected(result):
-    logger.info(result)
+def start():
 
     # set disconnect callback
-    download_manager.set_disconnect_cb(on_disconnect)
+    # download_manager.set_disconnect_cb(on_disconnect)
 
     scheduler.start()
     info_scanner.start()
@@ -173,9 +172,7 @@ def stop_tasks():
     info_scanner.stop()
 
 
-d = download_manager.connect()
-d.addCallback(on_connected)
-d.addErrback(on_connect_fail)
+start()
 
 setup_server()
 

@@ -107,12 +107,12 @@ def add_episode():
     return admin_service.add_episode(content)
 
 
-@admin_api.route('/episode/<episode_id>/thumbnail', methods=['PUT'])
-@login_required
-@auth_user(User.LEVEL_ADMIN)
-def episode_thumbnail(episode_id):
-    content = json.loads(request.get_data(True, as_text=True))
-    return admin_service.update_thumbnail(episode_id, content['time'])
+# @admin_api.route('/episode/<episode_id>/thumbnail', methods=['PUT'])
+# @login_required
+# @auth_user(User.LEVEL_ADMIN)
+# def episode_thumbnail(episode_id):
+#     content = json.loads(request.get_data(True, as_text=True))
+#     return admin_service.update_thumbnail(episode_id, content['time'])
 
 
 @admin_api.route('/episode/<episode_id>', methods=['GET'])

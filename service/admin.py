@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import requests
 from sqlalchemy.orm.exc import NoResultFound
 
 from domain.Episode import Episode
@@ -41,6 +42,7 @@ class AdminService:
         config = yaml.load(fr)
         self.base_path = config['download']['location']
         self.image_domain = config['domain']['image']
+        self.download_manager_url = config['download_manager_url']
         self.file_downloader = FileDownloader()
 
         self.delete_delay = {'bangumi': 10, 'episode': 1}
@@ -494,7 +496,7 @@ class AdminService:
                 except Exception as error:
                     logger.error(error)
                 # remove torrent from deluge
-                rpc_request.send('delete_deluge_torrent', {'torrent_id': video_file.torrent_id})
+                requests.delete(self.download_manager_url + '/file/torrent/' + video_file.task_id)
                 # remove video_file
                 session.delete(video_file)
 
@@ -632,7 +634,7 @@ class AdminService:
                 except Exception as error:
                     logger.warn(error)
 
-            rpc_request.send('delete_deluge_torrent', {'torrent_id': video_file.torrent_id})
+            requests.delete(self.download_manager_url + '/file/torrent/' + video_file.task_id)
             session.delete(video_file)
 
             session.commit()

@@ -14,7 +14,10 @@ class VideoFile(Base):
 
     file_name = Column(String, nullable=True)
     file_path = Column(String, nullable=True)  # file path is real path to the file in filesystem
+    # deprecated
     torrent_id = Column(String, nullable=True)  # torrent_id is deluge torrent id associated with this file, for imported file, torrent_id should be null
+
+    task_id = Column(String, nullable=True)  # DownloadTaskMessage Id
     download_url = Column(String, nullable=True)  # torrent download url, can be magnet
     status = Column(Integer, nullable=False, default=1)
 

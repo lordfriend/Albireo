@@ -33,8 +33,8 @@ class FeedScanner:
         lc = LoopingCall(self.scan_feed)
         lc.start(self.interval)
 
-        lc2 = LoopingCall(self.scan_downloading)
-        lc2.start(self.interval * 2)
+        # lc2 = LoopingCall(self.scan_downloading)
+        # lc2.start(self.interval * 2)
 
     def __query_video_file(self):
         session = SessionManager.Session()
@@ -56,12 +56,12 @@ class FeedScanner:
         finally:
             SessionManager.Session.remove()
 
-    def __update_video_file(self, video_file_list, torrent_id):
+    def __update_video_file(self, video_file_list, task_id):
         session = SessionManager.Session()
         try:
             for video_file in video_file_list:
                 session.add(video_file)
-                video_file.torrent_id = torrent_id
+                video_file.task_id = task_id
                 video_file.status = VideoFile.STATUS_DOWNLOADING
             session.commit()
         finally:
@@ -117,64 +117,65 @@ class FeedScanner:
 
         for download_url, same_torrent_video_file_list in download_url_dict.iteritems():
             first_video_file = same_torrent_video_file_list[0]
-            bangumi_path = self.base_path + '/' + str(first_video_file.bangumi_id)
+            file_mapping = None
+            video_id = None
+            if len(same_torrent_video_file_list) > 1 or same_torrent_video_file_list[0].file_path is not None:
+                file_mapping = [{'filePath': video_file.file_path, 'videoId': str(video_file.id)} for video_file in same_torrent_video_file_list]
+            else:
+                video_id = str(first_video_file.id)
+            # bangumi_path = self.base_path + '/' + str(first_video_file.bangumi_id)
             try:
-                torrent_id = yield download_manager.download(first_video_file.download_url, bangumi_path)
-                logger.info(torrent_id)
-                if torrent_id is None:
-                    logger.warn('episode %s already in download queue', str(first_video_file.episode_id))
-                else:
-                    yield threads.deferToThread(self.__update_video_file, same_torrent_video_file_list, torrent_id)
+                task_id = yield download_manager.download(download_url, str(first_video_file.bangumi_id), video_id, file_mapping)
+                yield threads.deferToThread(self.__update_video_file, same_torrent_video_file_list, task_id)
             except Exception as error:
                 logger.error(error, exc_info=True)
                 logger.error('episode %s download failed', str(first_video_file.episode_id))
 
-    @inlineCallbacks
-    def __fix_video_file(self, video_file_list):
-        torrent_dict = yield download_manager.get_complete_torrents()
-        fixed_video_file_ids = []
-        for video_file in video_file_list:
-            if video_file.torrent_id in torrent_dict:
-                # this video_file status is wrong, update it
-                file_list = torrent_dict[video_file.torrent_id]['files']
-                if video_file.file_path is None and video_file.file_name is None:
-                    if len(file_list) == 1:
-                        # only one file
-                        file_path = file_list[0]['path']
-                    elif len(file_list) > 1:
-                        max_size = file_list[0]['size']
-                        main_file = file_list[0]
-                        for file in file_list:
-                            if not file['path'].endswith('.mp4'):
-                                continue
-                            if file['size'] > max_size:
-                                main_file = file
-
-                        file_path = main_file['path']
-                    else:
-                        logger.warn('no file found in %s', video_file.torrent_id)
-                        continue
-                    video_file.file_path = file_path
-                    video_file.status = VideoFile.STATUS_DOWNLOADED
-                    video_file_id = yield threads.deferToThread(self.__update_info, video_file)
-                    fixed_video_file_ids.append(video_file_id)
-                else:
-                    file_path_list = [file['path'] for file in file_list]
-                    for file_path in file_path_list:
-                        if video_file.file_name is not None and video_file.file_path is None and file_path.endswith(video_file.file_name):
-                            video_file.file_path = file_path
-                            video_file.status = VideoFile.STATUS_DOWNLOADED
-                            video_file_id = yield threads.deferToThread(self.__update_info, video_file)
-                            fixed_video_file_ids.append(video_file_id)
-                            break
-                        elif video_file.file_path is not None and file_path == video_file.file_path:
-                            video_file.status = VideoFile.STATUS_DOWNLOADED
-                            video_file_id = yield threads.deferToThread(self.__update_info, video_file)
-                            fixed_video_file_ids.append(video_file_id)
-                            break
-        if len(fixed_video_file_ids) > 0:
-            logger.info('fixed video_files: %s', str(fixed_video_file_ids))
-
+    # @inlineCallbacks
+    # def __fix_video_file(self, video_file_list):
+    #     torrent_dict = yield download_manager.get_complete_torrents()
+    #     fixed_video_file_ids = []
+    #     for video_file in video_file_list:
+    #         if video_file.torrent_id in torrent_dict:
+    #             # this video_file status is wrong, update it
+    #             file_list = torrent_dict[video_file.torrent_id]['files']
+    #             if video_file.file_path is None and video_file.file_name is None:
+    #                 if len(file_list) == 1:
+    #                     # only one file
+    #                     file_path = file_list[0]['path']
+    #                 elif len(file_list) > 1:
+    #                     max_size = file_list[0]['size']
+    #                     main_file = file_list[0]
+    #                     for file in file_list:
+    #                         if not file['path'].endswith('.mp4'):
+    #                             continue
+    #                         if file['size'] > max_size:
+    #                             main_file = file
+    #
+    #                     file_path = main_file['path']
+    #                 else:
+    #                     logger.warn('no file found in %s', video_file.torrent_id)
+    #                     continue
+    #                 video_file.file_path = file_path
+    #                 video_file.status = VideoFile.STATUS_DOWNLOADED
+    #                 video_file_id = yield threads.deferToThread(self.__update_info, video_file)
+    #                 fixed_video_file_ids.append(video_file_id)
+    #             else:
+    #                 file_path_list = [file['path'] for file in file_list]
+    #                 for file_path in file_path_list:
+    #                     if video_file.file_name is not None and video_file.file_path is None and file_path.endswith(video_file.file_name):
+    #                         video_file.file_path = file_path
+    #                         video_file.status = VideoFile.STATUS_DOWNLOADED
+    #                         video_file_id = yield threads.deferToThread(self.__update_info, video_file)
+    #                         fixed_video_file_ids.append(video_file_id)
+    #                         break
+    #                     elif video_file.file_path is not None and file_path == video_file.file_path:
+    #                         video_file.status = VideoFile.STATUS_DOWNLOADED
+    #                         video_file_id = yield threads.deferToThread(self.__update_info, video_file)
+    #                         fixed_video_file_ids.append(video_file_id)
+    #                         break
+    #     if len(fixed_video_file_ids) > 0:
+    #         logger.info('fixed video_files: %s', str(fixed_video_file_ids))
 
 
     def __on_query_error(self, err):
@@ -186,12 +187,12 @@ class FeedScanner:
         d.addCallback(self.__add_download)
         d.addErrback(self.__on_query_error)
 
-    def scan_downloading(self):
-        logger.info('scan downloading')
-        '''
-        scan downloading status video_file, find error status video_file and auto correct it.
-        :return:
-        '''
-        d = threads.deferToThread(self.__query_downloading_video_file)
-        d.addCallback(self.__fix_video_file)
-        d.addErrback(self.__on_query_error)
+    # def scan_downloading(self):
+    #     logger.info('scan downloading')
+    #     '''
+    #     scan downloading status video_file, find error status video_file and auto correct it.
+    #     :return:
+    #     '''
+    #     d = threads.deferToThread(self.__query_downloading_video_file)
+    #     d.addCallback(self.__fix_video_file)
+    #     d.addErrback(self.__on_query_error)

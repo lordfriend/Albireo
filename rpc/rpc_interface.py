@@ -249,16 +249,34 @@ def email_changed(email, user_id):
 
 @rpc_export
 def delete_deluge_torrent(torrent_id):
-    from utils.DownloadManager import download_manager
+    # from utils.DownloadManager import download_manager
+    #
+    # def on_success(info):
+    #     logger.debug(info)
+    #     logger.info('{0} deleted'.format(torrent_id,))
+    #
+    # def on_fail(err):
+    #     logger.error('fail to delete torrent of {0}')
+    #     logger.error(err, exc_info=True)
+    # d = download_manager.remove_torrents((torrent_id,), True)
+    # d.addCallback(on_success)
+    # d.addErrback(on_fail)
+    pass
 
-    def on_success(info):
-        logger.debug(info)
-        logger.info('{0} deleted'.format(torrent_id,))
+
+@rpc_export
+def download_complete(video_id, bangumi_id, file_path):
+    logger.info('download complete ' + video_id + " file: " + file_path)
+    from utils.DownloadManager import download_manager
+    # idx = file_path.find(bangumi_id)
+    # file_path = file_path[idx + len(bangumi_id):]
+
+    def on_success(result):
+        logger.info('post process of video file ' + video_id + ' completed, bangumi_id: ' + bangumi_id)
 
     def on_fail(err):
-        logger.error('fail to delete torrent of {0}')
-        logger.error(err, exc_info=True)
-    d = download_manager.remove_torrents((torrent_id,), True)
+        logger.error(err)
+
+    d = download_manager.on_download_completed(video_id, file_path)
     d.addCallback(on_success)
     d.addErrback(on_fail)
-
