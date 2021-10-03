@@ -1,4 +1,5 @@
 from feed_scanner.AbstractScanner import AbstractScanner
+from utils.constants import VIDEO_FILE_EXT
 from utils.exceptions import SchedulerError
 import json
 import socket
@@ -42,7 +43,7 @@ class UNIVERSAL(AbstractScanner):
         for item in item_array:
             eps_list = []
             for media_file in item['files']:
-                if media_file['ext'] is not None and media_file['ext'].lower() != '.mp4':
+                if media_file['ext'] is None or media_file['ext'].lower() not in VIDEO_FILE_EXT:
                     continue
                 eps_no = self.parse_episode_number(media_file['name'])
                 if eps_no in eps_no_list:

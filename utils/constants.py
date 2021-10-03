@@ -10,3 +10,19 @@ episode_regex_tuple = (
     '\.S\d{1,2}E(\d{1,2})\.',
     u'第(\d+)集',
 )
+
+
+VIDEO_FILE_EXT = (
+    '.mp4',
+    '.mkv',
+    '.ts',
+    '.mov',
+    '.webm',
+    '.m2ts',
+    '.m2p',
+    '.ps',
+    '.mpg',
+    '.mpeg',
+    '.avi',
+    '.wmv'
+)

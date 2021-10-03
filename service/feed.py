@@ -11,7 +11,7 @@ import requests
 
 from utils.exceptions import ClientError
 from utils.http import json_resp, bangumi_moe_request
-from utils.constants import episode_regex_tuple
+from utils.constants import episode_regex_tuple, VIDEO_FILE_EXT
 
 logger = logging.getLogger(__name__)
 
@@ -201,10 +201,10 @@ class FeedService(object):
             media_files = item['files']
             item['eps_no_list'] = []
             for media_file in media_files:
-                if media_file['ext'] != '.mp4':
+                if media_file['ext'] not in VIDEO_FILE_EXT:
                     continue
                 eps_no = self.parse_episode_number(media_file['name'])
-                item['eps_no_list'].append(eps_no)
+                item['eps_no_list'].append({'eps_no': eps_no, 'format': media_file['ext'][1:]})
         return json_resp({'data': search_result, 'status': 0})
 
     def get_universal_meta(self):
