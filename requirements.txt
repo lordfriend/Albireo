@@ -13,4 +13,4 @@ Flask-Mail==0.9.1
 colorthief==0.2.1
 sender==0.3
 raven
-bleach==3.2.1
+bleach==3.3.0
