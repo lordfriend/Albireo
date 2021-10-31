@@ -74,4 +74,5 @@ universal:
   bangumi_moe: https://res.iroha.io/bangumi-moe/item
   nyaa: https://res.iroha.io/nyaa/item
 
-download_manager_rpc: 'http://localhost:8081/rpc/download'
+download_manager_rpc: 'http://localhost:8081'
+video_manager_url: 'http://localhost:8083'
