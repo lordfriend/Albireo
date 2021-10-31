@@ -1,6 +1,8 @@
 import logging
 import os
 
+from routes.video_rule import video_rule_api
+
 FORMAT = '%(asctime)-15s %(module)s:%(lineno)d %(message)s'
 
 logging.basicConfig(format=FORMAT, datefmt='%Y/%m/%d %H:%M:%S')
@@ -35,6 +37,7 @@ from routes.task import task_api
 from routes.user_manage import user_manage_api
 from routes.announce import announce_api
 from routes.web_hook import web_hook_api
+from routes.download_manager import download_manager_api
 
 import yaml
 import os
@@ -104,6 +107,8 @@ app.register_blueprint(task_api, url_prefix='/api/task')
 app.register_blueprint(user_manage_api, url_prefix='/api/user-manage')
 app.register_blueprint(announce_api, url_prefix='/api/announce')
 app.register_blueprint(web_hook_api, url_prefix='/api/web-hook')
+app.register_blueprint(download_manager_api, url_prefix='/api/download-manager')
+app.register_blueprint(video_rule_api, url_prefix='/api/video-rule')
 
 mail = Mail(app)
 
