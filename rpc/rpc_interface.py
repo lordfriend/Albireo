@@ -16,6 +16,8 @@ from web_hook.events import UserFavoriteEvent, EpisodeEvent, InitialEvent, Token
 from web_hook.dispatcher import dispatcher
 import logging
 import yaml
+import urllib
+
 
 logger = logging.getLogger(__name__)
 
@@ -266,10 +268,12 @@ def delete_deluge_torrent(torrent_id):
 
 @rpc_export
 def download_complete(video_id, bangumi_id, file_path):
-    logger.info('download complete ' + video_id + " file: " + file_path)
+
     from utils.DownloadManager import download_manager
     # idx = file_path.find(bangumi_id)
     # file_path = file_path[idx + len(bangumi_id):]
+    file_path = urllib.unquote(str(file_path)).decode('utf-8')
+    logger.info('download complete ' + video_id + " file: " + file_path)
 
     def on_success(result):
         logger.info('post process of video file ' + video_id + ' completed, bangumi_id: ' + bangumi_id)
