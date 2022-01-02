@@ -13,7 +13,7 @@ RUN apt install -y ffmpeg postgresql-client python-dev libyaml-dev python-psycop
 
 RUN apt install -y build-essential libssl-dev libffi-dev nodejs
 
-COPY Albireo/requirements.txt .
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
@@ -31,4 +31,4 @@ RUN chown user:user -R /data
 
 USER user
 
-COPY Albireo/ /usr/app/
+COPY ./ /usr/app/
