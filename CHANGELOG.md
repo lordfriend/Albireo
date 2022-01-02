@@ -1,4 +1,7 @@
 # Changelog
+## 4.0.3
+
+- fix bugs in Dockerfile
 
 ## 4.0.2
 
