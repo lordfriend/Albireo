@@ -11,7 +11,7 @@ WORKDIR /usr/app
 
 RUN apt install -y ffmpeg postgresql-client python-dev libyaml-dev python-psycopg2 openssl python-imaging
 
-RUN apt install -y build-essential libssl-dev libffi-dev deluged nodejs
+RUN apt install -y build-essential libssl-dev libffi-dev nodejs
 
 COPY Albireo/requirements.txt .
 
