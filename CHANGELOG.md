@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.2
+
+- update Dockerfile
+
 ## 4.0.1
 
 - update Dockerfile and workflow
