@@ -2,14 +2,14 @@ FROM ubuntu:16.04
 
 # If you have hash mismatch issue, uncomment this line
 # RUN rm -rf /var/lib/apt/lists/* && apt clean
-
-RUN apt update && apt install -y wget tar python python-pip curl libcurl4-openssl-dev locales
+RUN apt update && apt instal apt-utils
+RUN apt install -y wget tar python python-pip curl libcurl4-openssl-dev locales
 
 RUN mkdir -p /usr/app
 
 WORKDIR /usr/app
 
-RUN apt install -y ffmpeg postgresql-client python-dev libyaml-dev python-psycopg2 openssl python-imaging
+RUN apt install -y ffmpeg libpq-dev postgresql-client python-dev libyaml-dev python-psycopg2 openssl python-imaging
 
 RUN apt install -y build-essential libssl-dev libffi-dev nodejs
 

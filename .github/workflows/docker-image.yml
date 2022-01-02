@@ -16,7 +16,7 @@ jobs:
       name: Build and Publish latest service image
       with:
         github-push-secret: ${{ secrets.GITHUB_TOKEN }}
-        docker-image-name: Albireo
+        docker-image-name: albireo
         docker-image-tag: ${{ github.ref_name	}} # optional
         dockerfile-path: ./docker-sample/Dockerfile # optional
         build-context: . # optional
