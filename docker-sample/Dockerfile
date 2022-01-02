@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 
 # If you have hash mismatch issue, uncomment this line
 # RUN rm -rf /var/lib/apt/lists/* && apt clean
-RUN apt update && apt instal apt-utils
+RUN apt update && apt install -y apt-utils
 RUN apt install -y wget tar python python-pip curl libcurl4-openssl-dev locales
 
 RUN mkdir -p /usr/app
