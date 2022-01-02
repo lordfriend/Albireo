@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.0
+
+- Separate downloader management to mira-download-manager
+- Add API proxy for mira-download-manager and mira-video-manager.
+
 ## 3.0.3
 
 - Force use https link to download image from bgm.tv. #167
