@@ -98,7 +98,7 @@ run `python server.py`, if you set the environment variable DEBUG=True, the debu
 In production mode, using twistd as WSGI container
 
 ```shell
-twistd -n web --port 5000 --wsgi appd.app
+twistd -n --pidfile= web --port 5000 --wsgi appd.app
 ```
 
 ## Nginx Configuration
