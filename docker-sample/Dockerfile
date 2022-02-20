@@ -21,14 +21,6 @@ RUN locale-gen en_US.UTF-8
 
 ENV LANG en_US.UTF-8
 
-RUN useradd -u 1000 --create-home user
-
-RUN chown user:user -R /usr/app
-
 RUN mkdir -p /data
-
-RUN chown user:user -R /data
-
-USER user
 
 COPY ./ /usr/app/

@@ -1,4 +1,7 @@
 # Changelog
+## 4.0.4
+- Remove uid and user config from Dockerfile to avoid conflict
+
 ## 4.0.3
 
 - fix bugs in Dockerfile
