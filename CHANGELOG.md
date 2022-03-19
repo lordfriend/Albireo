@@ -1,4 +1,7 @@
 # Changelog
+## 4.0.5
+- Fix bug that old video_file cannot be removed.
+
 ## 4.0.4
 - Remove uid and user config from Dockerfile to avoid conflict
 

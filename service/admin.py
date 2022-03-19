@@ -634,7 +634,11 @@ class AdminService:
                 except Exception as error:
                     logger.warn(error)
 
-            requests.delete(self.download_manager_url + '/file/torrent/' + video_file.task_id)
+            try:
+                requests.delete(self.download_manager_url + '/file/torrent/' + video_file.task_id)
+            except Exception as error:
+                logger.warn(error)
+
             session.delete(video_file)
 
             session.commit()
