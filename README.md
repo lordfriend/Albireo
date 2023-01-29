@@ -2,7 +2,7 @@
 A bangumi auto download and management project
 This is the backend part.
 
-**This repository is archived, the project is suceeded by project-mira: **
+**This repository is archived, the project is suceeded by project-mira: https://github.com/irohalab/Albireo**
 
 ## Motivation
 
