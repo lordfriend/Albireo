@@ -2,6 +2,8 @@
 A bangumi auto download and management project
 This is the backend part.
 
+**This repository is archived, the project is suceeded by project-mira: **
+
 ## Motivation
 
 There are an existed resolution for auto download bangumi from dmhy or other bt site by using flexget to parse the rss feed periodically. but that resolution is hard to manage the downloaded
